@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎌 AnimeStore — Магазин Аніме Мерчу</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="app-layout">
+        <!-- Header -->
+        <header class="navbar">
+            <div class="brand">
+                <span class="logo-badge">🎌</span>
+                <div>
+                    <h1 class="brand-title">AnimeStore</h1>
+                    <p class="brand-subtitle">PostgreSQL + Spring Boot REST API</p>
+                </div>
+            </div>
+            <div class="stats-pills">
+                <div class="stat-item">
+                    <span class="stat-label">Товарів у каталозі</span>
+                    <span id="totalItemsCount" class="stat-value">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">В наявності</span>
+                    <span id="totalStockCount" class="stat-value">0</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Workspace -->
+        <main class="content-container">
+            <!-- Controls Bar -->
+            <section class="card controls-card">
+                <div class="search-group">
+                    <div class="input-wrapper">
+                        <span class="input-icon">🔍</span>
+                        <input type="search" id="searchInput" placeholder="Пошук за назвою або франшизою...">
+                    </div>
+
+                    <select id="categoryFilter" class="select-input">
+                        <option value="">Усі категорії</option>
+                        <option value="FIGURE">Фігурки (Figure)</option>
+                        <option value="MANGA">Манґа (Manga)</option>
+                        <option value="NENDOROID">Нендороїди (Nendoroid)</option>
+                        <option value="COSPLAY">Косплей (Cosplay)</option>
+                        <option value="ACCESSORY">Аксесуари (Accessory)</option>
+                        <option value="POSTER">Постери (Poster)</option>
+                    </select>
+
+                    <button id="resetFiltersBtn" class="btn btn-secondary" title="Скинути фільтри">Скинути</button>
+                    <button id="openNewModalBtn" class="btn btn-primary">+ Додати аніме-товар</button>
+                </div>
+            </section>
+
+            <!-- Products Table Section -->
+            <section class="card table-card">
+                <div class="table-responsive">
+                    <table class="styled-table" id="productsTable">
+                        <thead>
+                            <tr>
+                                <th>#ID</th>
+                                <th>Назва товару</th>
+                                <th>Франшиза (Аніме)</th>
+                                <th>Категорія</th>
+                                <th>Персонаж</th>
+                                <th class="text-right">Ціна</th>
+                                <th class="text-right">Склад</th>
+                                <th class="text-center">Рік</th>
+                                <th class="text-center">Рейтинг</th>
+                                <th class="text-center">Дії</th>
+                            </tr>
+                        </thead>
+                        <tbody id="productsTableBody">
+                            <!-- Populated via app.js -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Empty State -->
+                <div id="emptyState" class="empty-state" hidden>
+                    <span class="empty-icon">🎐</span>
+                    <h3>Товарів не знайдено</h3>
+                    <p>Спробуйте змінити фільтри пошуку або додайте перший аніме-товар до каталогу.</p>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Product Modal Dialog -->
+    <dialog id="productDialog" class="styled-dialog">
+        <div class="dialog-content">
+            <div class="dialog-header">
+                <h2 id="dialogTitle">Додати новий аніме-товар</h2>
+                <button type="button" id="closeDialogBtn" class="close-x">&times;</button>
+            </div>
+
+            <form id="productForm" method="dialog">
+                <input type="hidden" id="formProductId">
+
+                <div class="form-grid">
+                    <div class="form-group full-width">
+                        <label for="formTitle">Назва товару *</label>
+                        <input type="text" id="formTitle" required placeholder="Наприклад: Naruto Uzumaki Sage Mode Figure">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="formFranchise">Франшиза (Аніме) *</label>
+                        <input type="text" id="formFranchise" required placeholder="Наприклад: Naruto Shippuden">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="formCategory">Категорія *</label>
+                        <select id="formCategory" required>
+                            <option value="FIGURE">FIGURE (Фігурка)</option>
+                            <option value="MANGA">MANGA (Манґа)</option>
+                            <option value="NENDOROID">NENDOROID (Нендороїд)</option>
+                            <option value="COSPLAY">COSPLAY (Косплей)</option>
+                            <option value="ACCESSORY">ACCESSORY (Аксесуар)</option>
+                            <option value="POSTER">POSTER (Постер)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="formCharacter">Персонаж</label>
+                        <input type="text" id="formCharacter" placeholder="Наприклад: Naruto Uzumaki">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="formPrice">Ціна ($) *</label>
+                        <input type="number" id="formPrice" step="0.01" min="0" required placeholder="0.00">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="formStock">Кількість на складі *</label>
+                        <input type="number" id="formStock" min="0" required value="10">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="formYear">Рік релізу</label>
+                        <input type="number" id="formYear" min="1980" max="2099" value="2024">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="formRating">Рейтинг (0.0 - 5.0)</label>
+                        <input type="number" id="formRating" step="0.1" min="0" max="5" value="4.8">
+                    </div>
+                </div>
+
+                <div id="formErrorMessage" class="form-error" hidden></div>
+
+                <div class="dialog-actions">
+                    <button type="button" id="cancelDialogBtn" class="btn btn-secondary">Скасувати</button>
+                    <button type="submit" id="saveProductBtn" class="btn btn-primary">Зберегти товар</button>
+                </div>
+            </form>
+        </div>
+    </dialog>
+
+    <script src="app.js"></script>
+</body>
+</html>
