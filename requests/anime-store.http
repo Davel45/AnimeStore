@@ -1,0 +1,137 @@
+@host = http://localhost:8080
+@contentType = application/json
+
+### 1. GET all anime products
+GET {{host}}/api/products
+Accept: {{contentType}}
+
+> {%
+    client.test("Status is 200", () => {
+        client.assert(response.status === 200, "Expected 200 but got " + response.status);
+    });
+%}
+
+### 2. Search products by title
+GET {{host}}/api/products?title=Naruto
+Accept: {{contentType}}
+
+> {%
+    client.test("Status is 200 and returns array", () => {
+        client.assert(response.status === 200, "Expected 200");
+    });
+%}
+
+### 3. Filter products by category
+GET {{host}}/api/products?category=FIGURE
+Accept: {{contentType}}
+
+> {%
+    client.test("Status is 200", () => {
+        client.assert(response.status === 200, "Expected 200");
+    });
+%}
+
+### 4. CREATE a new anime product (POST)
+POST {{host}}/api/products
+Content-Type: {{contentType}}
+
+{
+  "title": "Nezuko Kamado Blood Demon Art Figure",
+  "franchise": "Demon Slayer",
+  "category": "FIGURE",
+  "characterName": "Nezuko Kamado",
+  "price": 79.99,
+  "stock": 12,
+  "releaseYear": 2023,
+  "rating": 4.9
+}
+
+> {%
+    client.global.set("createdProductId", response.body.id);
+    client.test("Created successfully with 201", () => {
+        client.assert(response.status === 201, "Expected 201 but got " + response.status);
+        client.assert(response.body.id != null, "Expected product ID to be generated");
+    });
+%}
+
+### 5. GET the newly created product by ID
+GET {{host}}/api/products/{{createdProductId}}
+Accept: {{contentType}}
+
+> {%
+    client.test("Status is 200 and matches created product", () => {
+        client.assert(response.status === 200, "Expected 200");
+        client.assert(response.body.characterName === "Nezuko Kamado", "Expected correct character name");
+    });
+%}
+
+### 6. UPDATE product price and stock (PUT)
+PUT {{host}}/api/products/{{createdProductId}}
+Content-Type: {{contentType}}
+
+{
+  "title": "Nezuko Kamado Blood Demon Art Figure (Deluxe Edition)",
+  "franchise": "Demon Slayer",
+  "category": "FIGURE",
+  "characterName": "Nezuko Kamado",
+  "price": 89.99,
+  "stock": 15,
+  "releaseYear": 2023,
+  "rating": 5.0
+}
+
+> {%
+    client.test("Updated with 200", () => {
+        client.assert(response.status === 200, "Expected 200");
+        client.assert(response.body.price === 89.99, "Expected price to be updated");
+    });
+%}
+
+### 7. DELETE the product by ID
+DELETE {{host}}/api/products/{{createdProductId}}
+
+> {%
+    client.test("Deleted successfully with 204", () => {
+        client.assert(response.status === 204, "Expected 204 but got " + response.status);
+    });
+%}
+
+### 8. GET deleted product -> 404 Not Found (Error handling demo)
+GET {{host}}/api/products/999999
+Accept: {{contentType}}
+
+> {%
+    client.test("Expected 404 Not Found", () => {
+        client.assert(response.status === 404, "Expected 404 but got " + response.status);
+    });
+%}
+
+### 9. CREATE invalid product -> 400 Bad Request (Validation demo)
+POST {{host}}/api/products
+Content-Type: {{contentType}}
+
+{
+  "title": "",
+  "franchise": "",
+  "category": "FIGURE",
+  "price": -15.00,
+  "stock": -5
+}
+
+> {%
+    client.test("Expected 400 Bad Request for invalid data", () => {
+        client.assert(response.status === 400, "Expected 400 but got " + response.status);
+    });
+%}
+
+### 10. CREATE with malformed JSON body -> 400 Bad Request (Malformed body demo)
+POST {{host}}/api/products
+Content-Type: {{contentType}}
+
+{ "title": "Broken Json", "franchise": }
+
+> {%
+    client.test("Expected 400 for malformed JSON", () => {
+        client.assert(response.status === 400, "Expected 400 but got " + response.status);
+    });
+%}
