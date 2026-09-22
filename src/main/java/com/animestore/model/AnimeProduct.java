@@ -41,7 +41,7 @@ public class AnimeProduct {
     @Column(name = "release_year")
     private Integer releaseYear;
 
-    @Column(precision = 3, scale = 1)
+    @Column(name = "rating")
     private Double rating;
 
     public AnimeProduct() {

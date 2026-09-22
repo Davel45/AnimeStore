@@ -19,8 +19,8 @@ public interface AnimeProductRepository extends JpaRepository<AnimeProduct, Long
     List<AnimeProduct> findByCategory(Category category);
 
     @Query("SELECT p FROM AnimeProduct p WHERE " +
-           "(:title IS NULL OR LOWER(p.title) LIKE LOWER(CONCAT('%', :title, '%'))) AND " +
-           "(:franchise IS NULL OR LOWER(p.franchise) LIKE LOWER(CONCAT('%', :franchise, '%'))) AND " +
+           "(:title IS NULL OR LOWER(p.title) LIKE LOWER(CONCAT('%', CAST(:title AS string), '%'))) AND " +
+           "(:franchise IS NULL OR LOWER(p.franchise) LIKE LOWER(CONCAT('%', CAST(:franchise AS string), '%'))) AND " +
            "(:category IS NULL OR p.category = :category)")
     List<AnimeProduct> searchProducts(@Param("title") String title,
                                       @Param("franchise") String franchise,
