@@ -7,6 +7,7 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
+import java.util.Arrays;
 import java.util.List;
 
 @Component
@@ -24,7 +25,7 @@ public class DataInitializer implements CommandLineRunner {
             return;
         }
 
-        repository.saveAll(List.of(
+        repository.saveAll(Arrays.asList(
                 new AnimeProduct("Naruto Uzumaki Sage Mode Figure", "Naruto Shippuden", Category.FIGURE,
                         "Naruto Uzumaki", new BigDecimal("89.99"), 15, 2021, 4.9),
                 new AnimeProduct("Roronoa Zoro Enma Sword Replica", "One Piece", Category.COSPLAY,
