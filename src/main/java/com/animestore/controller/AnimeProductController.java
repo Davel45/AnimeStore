@@ -70,4 +70,20 @@ public class AnimeProductController {
     public void deleteProduct(@PathVariable Long id) {
         service.deleteProduct(id);
     }
+
+    // Role-based access test endpoints (Lecture 6)
+    @GetMapping("/hello/admin")
+    public String helloAdmin() {
+        return "Hello Admin!";
+    }
+
+    @GetMapping("/hello/user")
+    public String helloUser() {
+        return "Hello User!";
+    }
+
+    @GetMapping("/hello/man")
+    public String helloMan() {
+        return "Hello, AnimeStore Member!";
+    }
 }

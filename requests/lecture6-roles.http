@@ -1,0 +1,129 @@
+@host = http://localhost:8080
+@contentType = application/json
+
+### 1. USER: Can read own hello endpoint (200 OK)
+GET {{host}}/api/products/hello/user
+Authorization: Basic user user
+Accept: {{contentType}}
+
+> {%
+    client.test("1. User accesses /hello/user: 200 OK", () => {
+        client.assert(response.status === 200, "Expected 200 OK");
+    });
+%}
+
+### 2. USER: Can view products list (200 OK)
+GET {{host}}/api/products
+Authorization: Basic user user
+Accept: {{contentType}}
+
+> {%
+    client.test("2. User views products: 200 OK", () => {
+        client.assert(response.status === 200, "Expected 200 OK");
+    });
+%}
+
+### 3. USER RESTRICTION: Cannot access /hello/admin (403 Forbidden)
+GET {{host}}/api/products/hello/admin
+Authorization: Basic user user
+Accept: {{contentType}}
+
+> {%
+    client.test("3. User blocked from admin endpoint: 403 Forbidden", () => {
+        client.assert(response.status === 403, "Expected 403 Forbidden");
+    });
+%}
+
+### 4. USER RESTRICTION: Cannot create products (403 Forbidden)
+POST {{host}}/api/products
+Authorization: Basic user user
+Content-Type: {{contentType}}
+
+{
+  "title": "Unauthorized User Product",
+  "franchise": "Naruto",
+  "category": "FIGURE",
+  "price": 50.00,
+  "stock": 1
+}
+
+> {%
+    client.test("4. User cannot create product: 403 Forbidden", () => {
+        client.assert(response.status === 403, "Expected 403 Forbidden");
+    });
+%}
+
+### 5. ADMIN: Can access /hello/admin (200 OK)
+GET {{host}}/api/products/hello/admin
+Authorization: Basic admin admin
+Accept: {{contentType}}
+
+> {%
+    client.test("5. Admin accesses /hello/admin: 200 OK", () => {
+        client.assert(response.status === 200, "Expected 200 OK");
+    });
+%}
+
+### 6. ADMIN: Can access common /hello/man endpoint (200 OK)
+GET {{host}}/api/products/hello/man
+Authorization: Basic admin admin
+Accept: {{contentType}}
+
+> {%
+    client.test("6. Admin accesses /hello/man: 200 OK", () => {
+        client.assert(response.status === 200, "Expected 200 OK");
+    });
+%}
+
+### 7. ADMIN: Can create products (201 Created)
+POST {{host}}/api/products
+Authorization: Basic admin admin
+Content-Type: {{contentType}}
+
+{
+  "title": "Gojo Satoru Unlimited Void Figure",
+  "franchise": "Jujutsu Kaisen",
+  "category": "FIGURE",
+  "characterName": "Gojo Satoru",
+  "price": 109.99,
+  "stock": 12,
+  "releaseYear": 2024,
+  "rating": 5.0
+}
+
+> {%
+    client.global.set("roleCreatedId", response.body.id);
+    client.test("7. Admin creates product: 201 Created", () => {
+        client.assert(response.status === 201, "Expected 201 Created");
+    });
+%}
+
+### 8. ADMIN RESTRICTION: Cannot delete products (403 Forbidden)
+DELETE {{host}}/api/products/{{roleCreatedId}}
+Authorization: Basic admin admin
+
+> {%
+    client.test("8. Admin blocked from deleting: 403 Forbidden", () => {
+        client.assert(response.status === 403, "Expected 403 Forbidden");
+    });
+%}
+
+### 9. SUPERADMIN: Can delete products (204 No Content)
+DELETE {{host}}/api/products/{{roleCreatedId}}
+Authorization: Basic superadmin superadmin
+
+> {%
+    client.test("9. Superadmin deletes product: 204 No Content", () => {
+        client.assert(response.status === 204, "Expected 204 No Content");
+    });
+%}
+
+### 10. UNAUTHENTICATED: Denied without credentials (401 Unauthorized)
+GET {{host}}/api/products
+Accept: {{contentType}}
+
+> {%
+    client.test("10. Unauthenticated request rejected: 401 Unauthorized", () => {
+        client.assert(response.status === 401, "Expected 401 Unauthorized");
+    });
+%}
