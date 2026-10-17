@@ -1,0 +1,81 @@
+@host = http://localhost:8080
+@username = animeadmin
+@password = secret123
+@contentType = application/json
+
+### 1. GET All items (show all)
+GET {{host}}/api/products
+Authorization: Basic {{username}} {{password}}
+Accept: {{contentType}}
+
+> {%
+    client.test("1. Show all: Status is 200", () => {
+        client.assert(response.status === 200, "Expected 200 OK");
+    });
+%}
+
+### 2. GET one item (read one)
+GET {{host}}/api/products/1
+Authorization: Basic {{username}} {{password}}
+Accept: {{contentType}}
+
+> {%
+    client.test("2. Read one: Status is 200", () => {
+        client.assert(response.status === 200, "Expected 200 OK");
+    });
+%}
+
+### 3. CREATE one item (create one)
+POST {{host}}/api/products
+Authorization: Basic {{username}} {{password}}
+Content-Type: {{contentType}}
+
+{
+  "title": "Levi Ackerman Clean Figure Edition",
+  "franchise": "Attack on Titan",
+  "category": "FIGURE",
+  "characterName": "Levi Ackerman",
+  "price": 89.99,
+  "stock": 10,
+  "releaseYear": 2024,
+  "rating": 5.0
+}
+
+> {%
+    client.global.set("createdItemId", response.body.id);
+    client.test("3. Create one: Status is 201", () => {
+        client.assert(response.status === 201, "Expected 201 Created");
+    });
+%}
+
+### 4. UPDATE one item (update one)
+PUT {{host}}/api/products/{{createdItemId}}
+Authorization: Basic {{username}} {{password}}
+Content-Type: {{contentType}}
+
+{
+  "title": "Levi Ackerman Clean Figure Edition (Special Edition)",
+  "franchise": "Attack on Titan",
+  "category": "FIGURE",
+  "characterName": "Levi Ackerman",
+  "price": 99.99,
+  "stock": 15,
+  "releaseYear": 2024,
+  "rating": 5.0
+}
+
+> {%
+    client.test("4. Update one: Status is 200", () => {
+        client.assert(response.status === 200, "Expected 200 OK");
+    });
+%}
+
+### 5. DELETE one item (delete one)
+DELETE {{host}}/api/products/{{createdItemId}}
+Authorization: Basic {{username}} {{password}}
+
+> {%
+    client.test("5. Delete one: Status is 204", () => {
+        client.assert(response.status === 204, "Expected 204 No Content");
+    });
+%}
