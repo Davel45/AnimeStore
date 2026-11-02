@@ -26,7 +26,7 @@ public class SecurityConfig {
                         // Public frontend web resources
                         .requestMatchers("/", "/index.html", "/styles.css", "/app.js", "/favicon.ico").permitAll()
 
-                        // Lecture 6 role-specific endpoints
+                        // Role-based access endpoints
                         .requestMatchers("/api/products/hello/admin").hasRole("ADMIN")
                         .requestMatchers("/api/products/hello/user").hasRole("USER")
                         .requestMatchers("/api/products/hello/man").hasAnyRole("USER", "ADMIN")

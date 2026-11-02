@@ -71,7 +71,7 @@ public class AnimeProductController {
         service.deleteProduct(id);
     }
 
-    // Role-based access test endpoints (Lecture 6)
+    // Role-based access endpoints
     @GetMapping("/hello/admin")
     public String helloAdmin() {
         return "Hello Admin!";
