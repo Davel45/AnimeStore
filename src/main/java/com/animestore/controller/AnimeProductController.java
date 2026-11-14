@@ -7,6 +7,7 @@ import com.animestore.service.AnimeProductService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -34,6 +35,7 @@ public class AnimeProductController {
         this.service = service;
     }
 
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN', 'SUPERADMIN')")
     @GetMapping
     public ResponseEntity<List<AnimeProductResponse>> getAllProducts(
             @RequestParam(required = false) String title,
@@ -42,11 +44,13 @@ public class AnimeProductController {
         return ResponseEntity.ok(service.searchProducts(title, franchise, category));
     }
 
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN', 'SUPERADMIN')")
     @GetMapping("/{id}")
     public ResponseEntity<AnimeProductResponse> getProductById(@PathVariable Long id) {
         return ResponseEntity.ok(service.getProductById(id));
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPERADMIN')")
     @PostMapping
     public ResponseEntity<AnimeProductResponse> createProduct(
             @Valid @RequestBody AnimeProductRequest request,
@@ -58,6 +62,7 @@ public class AnimeProductController {
         return ResponseEntity.created(location).body(created);
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPERADMIN')")
     @PutMapping("/{id}")
     public ResponseEntity<AnimeProductResponse> updateProduct(
             @PathVariable Long id,
@@ -65,23 +70,27 @@ public class AnimeProductController {
         return ResponseEntity.ok(service.updateProduct(id, request));
     }
 
+    @PreAuthorize("hasRole('SUPERADMIN')")
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteProduct(@PathVariable Long id) {
         service.deleteProduct(id);
     }
 
-    // Role-based access endpoints
+    // Role-based access endpoints with annotations
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/hello/admin")
     public String helloAdmin() {
         return "Hello Admin!";
     }
 
+    @PreAuthorize("hasRole('USER')")
     @GetMapping("/hello/user")
     public String helloUser() {
         return "Hello User!";
     }
 
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN', 'SUPERADMIN')")
     @GetMapping("/hello/man")
     public String helloMan() {
         return "Hello, AnimeStore Member!";
