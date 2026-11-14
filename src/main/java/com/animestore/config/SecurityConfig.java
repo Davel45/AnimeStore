@@ -1,9 +1,13 @@
 package com.animestore.config;
 
+import org.springframework.aop.Advisor;
+import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod;
+import org.springframework.context.annotation.Role;
+import org.springframework.security.authorization.method.AuthorizationManagerBeforeMethodInterceptor;
 import org.springframework.security.config.Customizer;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -15,7 +19,14 @@ import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity
 public class SecurityConfig {
+
+    @Bean
+    @Role(BeanDefinition.ROLE_INFRASTRUCTURE)
+    public static Advisor preAuthorizeMethodInterceptor() {
+        return AuthorizationManagerBeforeMethodInterceptor.preAuthorize();
+    }
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -25,18 +36,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         // Public frontend web resources
                         .requestMatchers("/", "/index.html", "/styles.css", "/app.js", "/favicon.ico").permitAll()
-
-                        // Role-based access endpoints
-                        .requestMatchers("/api/products/hello/admin").hasRole("ADMIN")
-                        .requestMatchers("/api/products/hello/user").hasRole("USER")
-                        .requestMatchers("/api/products/hello/man").hasAnyRole("USER", "ADMIN")
-
-                        // Role-based CRUD restrictions
-                        .requestMatchers(HttpMethod.GET, "/api/products/**").hasAnyRole("USER", "ADMIN", "SUPERADMIN")
-                        .requestMatchers(HttpMethod.POST, "/api/products/**").hasAnyRole("ADMIN", "SUPERADMIN")
-                        .requestMatchers(HttpMethod.PUT, "/api/products/**").hasAnyRole("ADMIN", "SUPERADMIN")
-                        .requestMatchers(HttpMethod.DELETE, "/api/products/**").hasRole("SUPERADMIN")
-
+                        // All other endpoints require authentication; authorization is handled via annotations
                         .anyRequest().authenticated()
                 )
                 .httpBasic(Customizer.withDefaults());

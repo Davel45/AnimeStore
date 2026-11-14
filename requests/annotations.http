@@ -1,0 +1,130 @@
+@host = http://localhost:8080
+@contentType = application/json
+
+### 1. USER: Can access own annotated endpoint (200 OK)
+GET {{host}}/api/products/hello/user
+Authorization: Basic user user
+Accept: {{contentType}}
+
+> {%
+    client.test("1. @PreAuthorize allows USER access to /hello/user: 200 OK", () => {
+        client.assert(response.status === 200, "Expected 200 OK");
+    });
+%}
+
+### 2. USER: Can view products list (200 OK)
+GET {{host}}/api/products
+Authorization: Basic user user
+Accept: {{contentType}}
+
+> {%
+    client.test("2. @PreAuthorize allows USER to view products: 200 OK", () => {
+        client.assert(response.status === 200, "Expected 200 OK");
+    });
+%}
+
+### 3. USER RESTRICTION: Denied from admin endpoint (403 Forbidden)
+GET {{host}}/api/products/hello/admin
+Authorization: Basic user user
+Accept: {{contentType}}
+
+> {%
+    client.test("3. @PreAuthorize denies USER from /hello/admin: 403 Forbidden", () => {
+        client.assert(response.status === 403, "Expected 403 Forbidden");
+    });
+%}
+
+### 4. USER RESTRICTION: Denied from creating products (403 Forbidden)
+POST {{host}}/api/products
+Authorization: Basic user user
+Content-Type: {{contentType}}
+
+{
+  "title": "Unauthorized Anime Figure",
+  "franchise": "Demon Slayer",
+  "category": "FIGURE",
+  "price": 45.00,
+  "stock": 1
+}
+
+> {%
+    client.test("4. @PreAuthorize denies USER from creating product: 403 Forbidden", () => {
+        client.assert(response.status === 403, "Expected 403 Forbidden");
+    });
+%}
+
+### 5. ADMIN: Can access admin annotated endpoint (200 OK)
+GET {{host}}/api/products/hello/admin
+Authorization: Basic admin admin
+Accept: {{contentType}}
+
+> {%
+    client.test("5. @PreAuthorize allows ADMIN access to /hello/admin: 200 OK", () => {
+        client.assert(response.status === 200, "Expected 200 OK");
+    });
+%}
+
+### 6. ADMIN RESTRICTION: Denied from user-only endpoint (403 Forbidden)
+GET {{host}}/api/products/hello/user
+Authorization: Basic admin admin
+Accept: {{contentType}}
+
+> {%
+    client.test("6. @PreAuthorize denies ADMIN from /hello/user: 403 Forbidden", () => {
+        client.assert(response.status === 403, "Expected 403 Forbidden");
+    });
+%}
+
+### 7. ADMIN: Can access common member endpoint (200 OK)
+GET {{host}}/api/products/hello/man
+Authorization: Basic admin admin
+Accept: {{contentType}}
+
+> {%
+    client.test("7. @PreAuthorize allows ADMIN to access /hello/man: 200 OK", () => {
+        client.assert(response.status === 200, "Expected 200 OK");
+    });
+%}
+
+### 8. ADMIN: Can create products (201 Created)
+POST {{host}}/api/products
+Authorization: Basic admin admin
+Content-Type: {{contentType}}
+
+{
+  "title": "Tanjiro Kamado Hinokami Kagura Figure",
+  "franchise": "Demon Slayer",
+  "category": "FIGURE",
+  "characterName": "Tanjiro Kamado",
+  "price": 89.99,
+  "stock": 15,
+  "releaseYear": 2024,
+  "rating": 4.9
+}
+
+> {%
+    client.global.set("annotatedCreatedId", response.body.id);
+    client.test("8. @PreAuthorize allows ADMIN to create product: 201 Created", () => {
+        client.assert(response.status === 201, "Expected 201 Created");
+    });
+%}
+
+### 9. ADMIN RESTRICTION: Denied from deleting products (403 Forbidden)
+DELETE {{host}}/api/products/{{annotatedCreatedId}}
+Authorization: Basic admin admin
+
+> {%
+    client.test("9. @PreAuthorize denies ADMIN from deleting product: 403 Forbidden", () => {
+        client.assert(response.status === 403, "Expected 403 Forbidden");
+    });
+%}
+
+### 10. SUPERADMIN: Can delete products (204 No Content)
+DELETE {{host}}/api/products/{{annotatedCreatedId}}
+Authorization: Basic superadmin superadmin
+
+> {%
+    client.test("10. @PreAuthorize allows SUPERADMIN to delete product: 204 No Content", () => {
+        client.assert(response.status === 204, "Expected 204 No Content");
+    });
+%}
