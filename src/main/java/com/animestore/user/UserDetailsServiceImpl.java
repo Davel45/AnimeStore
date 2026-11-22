@@ -24,7 +24,9 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     @PostConstruct
     void init() {
         seedUser("John", "Lennon", "john@mail.com", "password", List.of(Role.USER));
+        seedUser("Tom", "Thompson", "tom@mail.com", "user", List.of(Role.USER));
         seedUser("Gojo", "Satoru", "admin@animestore.com", "admin", List.of(Role.ADMIN));
+        seedUser("Sung", "Jinwoo", "superadmin@animestore.com", "superadmin", List.of(Role.SUPERADMIN));
         seedUser("Naruto", "Uzumaki", "user", "user", List.of(Role.USER));
         seedUser("Gojo", "Satoru", "admin", "admin", List.of(Role.ADMIN));
         seedUser("Sung", "Jinwoo", "superadmin", "superadmin", List.of(Role.SUPERADMIN));
