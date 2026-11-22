@@ -13,7 +13,7 @@ import java.math.BigDecimal;
 
 @Entity
 @Table(name = "anime_products")
-public class AnimeProduct {
+public class AnimeProduct extends Auditable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

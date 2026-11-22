@@ -22,6 +22,14 @@ public class DataInitializer implements CommandLineRunner {
     @Override
     public void run(String... args) {
         if (repository.count() > 0) {
+            List<AnimeProduct> existing = repository.findAll();
+            for (AnimeProduct product : existing) {
+                if (product.getCreatedBy() == null) {
+                    product.setCreatedBy("system@animestore.com");
+                    product.setLastModifiedBy("system@animestore.com");
+                    repository.save(product);
+                }
+            }
             return;
         }
 
