@@ -4,6 +4,7 @@ import com.animestore.model.AnimeProduct;
 import com.animestore.model.Category;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 public class AnimeProductResponse {
 
@@ -16,13 +17,21 @@ public class AnimeProductResponse {
     private Integer stock;
     private Integer releaseYear;
     private Double rating;
+    private LocalDateTime createdDate;
+    private String createdBy;
+    private LocalDateTime lastModifiedDate;
+    private String lastModifiedBy;
+    private Long version;
 
     public AnimeProductResponse() {
     }
 
     public AnimeProductResponse(Long id, String title, String franchise, Category category,
                                 String characterName, BigDecimal price, Integer stock,
-                                Integer releaseYear, Double rating) {
+                                Integer releaseYear, Double rating,
+                                LocalDateTime createdDate, String createdBy,
+                                LocalDateTime lastModifiedDate, String lastModifiedBy,
+                                Long version) {
         this.id = id;
         this.title = title;
         this.franchise = franchise;
@@ -32,6 +41,11 @@ public class AnimeProductResponse {
         this.stock = stock;
         this.releaseYear = releaseYear;
         this.rating = rating;
+        this.createdDate = createdDate;
+        this.createdBy = createdBy;
+        this.lastModifiedDate = lastModifiedDate;
+        this.lastModifiedBy = lastModifiedBy;
+        this.version = version;
     }
 
     public static AnimeProductResponse fromEntity(AnimeProduct product) {
@@ -44,7 +58,12 @@ public class AnimeProductResponse {
                 product.getPrice(),
                 product.getStock(),
                 product.getReleaseYear(),
-                product.getRating()
+                product.getRating(),
+                product.getCreatedDate(),
+                product.getCreatedBy(),
+                product.getLastModifiedDate(),
+                product.getLastModifiedBy(),
+                product.getVersion()
         );
     }
 
@@ -118,5 +137,45 @@ public class AnimeProductResponse {
 
     public void setRating(Double rating) {
         this.rating = rating;
+    }
+
+    public LocalDateTime getCreatedDate() {
+        return createdDate;
+    }
+
+    public void setCreatedDate(LocalDateTime createdDate) {
+        this.createdDate = createdDate;
+    }
+
+    public String getCreatedBy() {
+        return createdBy;
+    }
+
+    public void setCreatedBy(String createdBy) {
+        this.createdBy = createdBy;
+    }
+
+    public LocalDateTime getLastModifiedDate() {
+        return lastModifiedDate;
+    }
+
+    public void setLastModifiedDate(LocalDateTime lastModifiedDate) {
+        this.lastModifiedDate = lastModifiedDate;
+    }
+
+    public String getLastModifiedBy() {
+        return lastModifiedBy;
+    }
+
+    public void setLastModifiedBy(String lastModifiedBy) {
+        this.lastModifiedBy = lastModifiedBy;
+    }
+
+    public Long getVersion() {
+        return version;
+    }
+
+    public void setVersion(Long version) {
+        this.version = version;
     }
 }

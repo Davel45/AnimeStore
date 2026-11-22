@@ -1,0 +1,87 @@
+@host = http://localhost:8080
+@contentType = application/json
+@adminToken = eyJhbGciOiJIUzM4NCJ9.eyJmdWxsTmFtZSI6Ikdvam8gU2F0b3J1Iiwic3ViIjoiYWRtaW5AYW5pbWVzdG9yZS5jb20iLCJpYXQiOjE3OTUzNDA2NDUsImV4cCI6MTc5NTQyNzA0NSwiYXV0aG9yaXRpZXMiOlsiQURNSU4iXX0.FuTXgHR2z4ax7xgCWyeKRvz6pD804Y-z0_xpddxDNWpQ-5CwRYg9haxCa1qZD2bJ
+@superadminToken = eyJhbGciOiJIUzM4NCJ9.eyJmdWxsTmFtZSI6IlN1bmcgSmlud29vIiwic3ViIjoic3VwZXJhZG1pbkBhbmltZXN0b3JlLmNvbSIsImlhdCI6MTc5NTM0MDY0NSwiZXhwIjoxNzk1NDI3MDQ1LCJhdXRob3JpdGllcyI6WyJTVVBFUkFETUlOIl19.z1L4JSYxkLr8fqTKOuMXsi2NxiW7aoboqMFnz3PSLjXYg4UqqFaiOKoRr2UPeIam
+
+### 1. CREATE item with ADMIN JWT (check createdBy & createdDate audit notes)
+POST {{host}}/api/products
+Authorization: Bearer {{adminToken}}
+Content-Type: {{contentType}}
+
+{
+  "title": "Frieren Beyond Journeys End Figure",
+  "franchise": "Frieren",
+  "category": "FIGURE",
+  "characterName": "Frieren",
+  "price": 129.99,
+  "stock": 7,
+  "releaseYear": 2025,
+  "rating": 5.0
+}
+
+> {%
+    client.global.set("auditedProductId", response.body.id);
+    client.test("1. CREATE: Audit notes createdBy=admin@animestore.com and version=0: 201 Created", () => {
+        client.assert(response.status === 201, "Expected 201 Created");
+        client.assert(response.body.createdBy === "admin@animestore.com", "Expected createdBy to be admin@animestore.com");
+        client.assert(response.body.version === 0, "Expected initial version 0");
+    });
+%}
+
+### 2. READ ONE item with ADMIN JWT (verify initial audit metadata)
+GET {{host}}/api/products/{{auditedProductId}}
+Authorization: Bearer {{adminToken}}
+Accept: {{contentType}}
+
+> {%
+    client.test("2. READ ONE: Returns product with audit metadata: 200 OK", () => {
+        client.assert(response.status === 200, "Expected 200 OK");
+        client.assert(response.body.createdBy === "admin@animestore.com", "Expected createdBy to match");
+    });
+%}
+
+### 3. UPDATE item with SUPERADMIN JWT (check lastModifiedBy & version increment)
+PUT {{host}}/api/products/{{auditedProductId}}
+Authorization: Bearer {{superadminToken}}
+Content-Type: {{contentType}}
+
+{
+  "title": "Frieren Beyond Journeys End Collector Figure",
+  "franchise": "Frieren",
+  "category": "FIGURE",
+  "characterName": "Frieren",
+  "price": 149.99,
+  "stock": 5,
+  "releaseYear": 2025,
+  "rating": 5.0
+}
+
+> {%
+    client.test("3. UPDATE: Audit notes lastModifiedBy=superadmin@animestore.com and version=1: 200 OK", () => {
+        client.assert(response.status === 200, "Expected 200 OK");
+        client.assert(response.body.createdBy === "admin@animestore.com", "Original creator preserved");
+        client.assert(response.body.lastModifiedBy === "superadmin@animestore.com", "Modifier updated to superadmin@animestore.com");
+        client.assert(response.body.version === 1, "Version incremented to 1");
+    });
+%}
+
+### 4. SHOW ALL items with ADMIN JWT (view audit notes across all items)
+GET {{host}}/api/products
+Authorization: Bearer {{adminToken}}
+Accept: {{contentType}}
+
+> {%
+    client.test("4. SHOW ALL: Returns products list with audit notes: 200 OK", () => {
+        client.assert(response.status === 200, "Expected 200 OK");
+    });
+%}
+
+### 5. DELETE item with SUPERADMIN JWT (triggers audit deletion log)
+DELETE {{host}}/api/products/{{auditedProductId}}
+Authorization: Bearer {{superadminToken}}
+
+> {%
+    client.test("5. DELETE: Deletes product and writes audit log: 204 No Content", () => {
+        client.assert(response.status === 204, "Expected 204 No Content");
+    });
+%}

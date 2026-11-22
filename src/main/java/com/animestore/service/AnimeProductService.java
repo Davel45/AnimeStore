@@ -6,6 +6,11 @@ import com.animestore.exception.ResourceNotFoundException;
 import com.animestore.model.AnimeProduct;
 import com.animestore.model.Category;
 import com.animestore.repository.AnimeProductRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,6 +21,7 @@ import java.util.stream.Collectors;
 @Transactional
 public class AnimeProductService {
 
+    private static final Logger log = LoggerFactory.getLogger(AnimeProductService.class);
     private final AnimeProductRepository repository;
 
     public AnimeProductService(AnimeProductRepository repository) {
@@ -102,9 +108,14 @@ public class AnimeProductService {
     }
 
     public void deleteProduct(Long id) {
-        if (!repository.existsById(id)) {
-            throw new ResourceNotFoundException("Anime product", id);
+        AnimeProduct product = repository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Anime product", id));
+        String username = "unknown";
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.isAuthenticated() && !(authentication instanceof AnonymousAuthenticationToken)) {
+            username = authentication.getName();
         }
+        log.info("Product '{}' (id={}) was deleted by {}", product.getTitle(), id, username);
         repository.deleteById(id);
     }
 }
