@@ -1,0 +1,35 @@
+@host = http://localhost:8080
+@contentType = application/json
+
+### 1. Authenticate user (John Lennon) and get JWT token
+POST {{host}}/api/v1/auth/authenticate
+Content-Type: {{contentType}}
+
+{
+  "email": "john@mail.com",
+  "password": "password"
+}
+
+> {%
+    client.test("1. Authenticate and receive JWT token: 200 OK", () => {
+        client.assert(response.status === 200, "Expected 200 OK");
+        client.assert(response.body.token !== undefined && response.body.token.length > 20, "Expected valid JWT token");
+    });
+    client.global.set("jwtToken", response.body.token);
+%}
+
+### 2. Authenticate admin (Gojo Satoru) and get JWT token
+POST {{host}}/api/v1/auth/authenticate
+Content-Type: {{contentType}}
+
+{
+  "email": "admin@animestore.com",
+  "password": "admin"
+}
+
+> {%
+    client.test("2. Authenticate admin and receive JWT token: 200 OK", () => {
+        client.assert(response.status === 200, "Expected 200 OK");
+        client.assert(response.body.token !== undefined && response.body.token.length > 20, "Expected valid JWT token");
+    });
+%}
