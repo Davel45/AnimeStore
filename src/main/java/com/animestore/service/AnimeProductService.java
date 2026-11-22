@@ -86,7 +86,7 @@ public class AnimeProductService {
                 request.getRating()
         );
 
-        AnimeProduct saved = repository.save(product);
+        AnimeProduct saved = repository.saveAndFlush(product);
         return AnimeProductResponse.fromEntity(saved);
     }
 
@@ -103,7 +103,7 @@ public class AnimeProductService {
         product.setReleaseYear(request.getReleaseYear());
         product.setRating(request.getRating());
 
-        AnimeProduct updated = repository.save(product);
+        AnimeProduct updated = repository.saveAndFlush(product);
         return AnimeProductResponse.fromEntity(updated);
     }
 
